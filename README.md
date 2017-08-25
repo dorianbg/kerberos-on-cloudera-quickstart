@@ -1,4 +1,4 @@
-# Kerberos Setup on Cloudera Quickstart
+# Administration Guide for Cloudera Quickstart
 
 ### 1. Start the docker container 
 
@@ -17,7 +17,7 @@ Also try to use atleast 8GB of RAM memory.
 
 ---
 
-### 2. Re-start Cloudera Manager and services (if it did not start properly)
+### 2. Re-start Cloudera Manager and services
 
 	sudo /home/cloudera/cloudera-manager --express --force;  sudo service cloudera-scm-server restart
 
