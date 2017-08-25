@@ -1,4 +1,4 @@
-# Administration Guide for Cloudera Quickstart
+# Administration Guide for Kerberos on Cloudera Quickstart
 
 ### 1. Start the docker container 
 
@@ -121,7 +121,7 @@ You should be blocked by Kerberos raising a PrivilegedActionException.
 
 ---
 
-### 5.Adding a Kerberos user
+### 5. Adding a Kerberos user
 
 You have to be using the "root" user to do the following.  
 
@@ -162,7 +162,7 @@ Now we need to add a HDFS folder for that user.
 
 ---
 
-### 6.Creating a Hadoop folder for a Kerberos user
+### 6. Creating a Hadoop folder for a Kerberos user
 
 After you added the user to hdfs, the user will have no write access unless you do the following: 
 
