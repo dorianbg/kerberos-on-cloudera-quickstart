@@ -17,15 +17,18 @@ Also try to use atleast 8GB of RAM memory.
 
 ---
 
-### 2. Re-start Cloudera Manager (if it did not start properly)
+### 2. Re-start Cloudera Manager and services (if it did not start properly)
 
-	sudo /home/cloudera/cloudera-manager --express --force;  sudo service cloudera-scm-	server restart
+	sudo /home/cloudera/cloudera-manager --express --force;  sudo service cloudera-scm-server restart
 
 - this will take 3-4 minutes to finish
 
+Now open the Cloudera manager and restart all services (hdfs, yarn, hue...) by using a single button.  
+
+
 ---
 
-### 3. Run the default Kerberos configuration 
+### 3. Run the default Kerberos configuration (If not installed) 
 
 Run this script: 
 
@@ -61,7 +64,7 @@ Later, it will prompt you for KDC account manager credentials:
 
 ---
 
-### 4. Enable Kerberos in Cloudera Manager
+### 4. Enable Kerberos in Cloudera Manager (If not installed) 
 
 Open in your browser: **localhost:7180**
 
@@ -118,21 +121,36 @@ You should be blocked by Kerberos raising a PrivilegedActionException.
 
 ---
 
-### 5.Add a Kerberos user
+### 5.Adding a Kerberos user
 
-To enter the Kerberos interactive shell type 
+You have to be using the "root" user to do the following.  
+
+Enter the Kerberos interactive shell type 
 
 	kadmin.local
 		
-Now add a principal by typing and providing a password   
+Now add a principal with name "test" by typing this command and then providing a password for this user  
 
 	addprinc test@CLOUDERA
 		
-Export the keytab of a principal using  
+Please remember the pricipal's password as your clients will login using that.  
+To check that the principal was created, run: 
+
+	list_principals
+
+You can test the login with that user by exiting the kadmin.local shell and typing: 
+
+	kinit test@CLOUDERA 
+	
+Then if you type "klist" you will see that there is a ticker using which you are logged in.
+You can also delete that ticked using "kdestry" command and then you can re-login.  
+
+- 
+You can also export the keytab of a principal using  
 
 	xst -k test.keytab test@CLOUDERA
 	
-Then copy the keytab outside of the container into your PC, eg. 
+and then copy the keytab outside of the container into your PC, eg. 
 
 	docker cp [container_id]:/test.keytab /Users/dorianbeganovic/Desktop/
 
@@ -140,13 +158,112 @@ Now you can finally login as test@CLOUDERA using Kerberos at your local (client)
 
 	kinit -k -t /Users/dorianbeganovic/Desktop/test.keytab test@CLOUDERA
 
+Now we need to add a HDFS folder for that user.
 
-With this, you can now safely access the Hadoop cluster !
+---
+
+### 6.Creating a Hadoop folder for a Kerberos user
+
+After you added the user to hdfs, the user will have no write access unless you do the following: 
+
+
+1. Establish the hdfs principal (If not already established)  
+2. Create a folder with user ownership
+
+##### Establishing hdfs principal  (If not already established)
+Write 
+	
+	kadmin.local
+
+Then add user with 
+
+	addprinc hdfs@CLOUDERA
+
+Then exit the kadmin.local shell with 
+
+	exit
+
+Lastly write 
+
+	kinit hdfs@CLOUDERA 
+
+to login to kerberos as hdfs principal which gives you the full write permissions. 
+
+
+##### Creating a folder for user
+
+You must first be logged in as **hdfs** principal (by running kinit command).  
+Now let's say the user you added is test@CLOUDERA.  
+The hadoop command you have to run is :  
+
+	hadoop fs -mkdir /user/test
+	hadoop fs -chown test /user/test  
+
+With this, you can now access the HDFS !
+
+--- 
+
+### 7. Configuring Kerberos on a client machine
+
+There are a few easy steps in this process.  
+
+For windows configuration you can also look at this manual http://doc.mapr.com/display/MapR/Configuring+Kerberos+Authentication+for+Windows  
+or pages 44-46 of this manual http://hortonworks.com/wp-content/uploads/2014/05/Product-Guide-HDP-2.1-v1.01.pdf  
+
+
+1. Add "147.228.63.46   quickstart.cloudera" entry to your /etc/hosts file  
+
+On linux you can use:
+		
+	echo "147.228.63.46   quickstart.cloudera" >> /etc/hosts
+		
+Or on windows use: 
+
+	echo 147.228.63.46   quickstart.cloudera >> %WINDIR%\System32\Drivers\Etc\Hosts
+	ipconfig /flushdns
+
+2. Install client application: 
+
+On linux you have to install the krb5-libs and krb5-workstation packages:
+		
+	 yum install krb5-workstation krb5-libs 
+	 
+For ubuntu it is a bit different, but at the bottom of this page there is a good manual: 
+
+	https://help.ubuntu.com/lts/serverguide/kerberos.html
+	 
+On windows: 
+
+	On 64-bit machines install this program http://web.mit.edu/kerberos/dist/kfw/4.0/kfw-4.0.1-amd64.msi
+
+3. Obtain krb5.conf file from your administrator.
+
+To set up the Kerberos configuration file in the default location, obtain the krb5.conf configuration file from your Kerberos administrator.
+
+On linux you have to copy the krb5.conf file you received into the /etc/ folder (overwrite the default file).  
+So run the command:  
+		
+	cp /.../krb5.conf /etc/
+
+On windows you should:
+
+	Rename the configuration file from krb5.conf to krb5.ini.
+	Copy the krb5.ini file to the C:\ProgramData\MIT\Kerberos5 directory, and overwrite the empty sample file.
+
+4. Login to Kerberos 
+
+On linux just write: 
+
+	kinit username@CLOUDERA
+
+And provide the proper password.
+
+On windows it is within a GUI so please refer to the manuals I specified above.  
 
 ---
 
 
-### 6. Accessing Hadoop cluster with Kerberos authentication 
+### 8. Accessing HDFS of a Hadoop cluster with Kerberos authentication  (Development)
 
 **1. Using the Hadoop shell**
 
