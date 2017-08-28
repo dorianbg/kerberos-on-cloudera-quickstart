@@ -13,7 +13,7 @@ Specifically we need to make sure that these ports are released on your localhos
 
 Also try to use atleast 8GB of RAM memory.
 
-	docker run --hostname=quickstart.cloudera --privileged=true -t -i -m 14G -p 80:80 -p 8888:8888 -p 1004:1004 -p 1006:1006 -p 7180:7180 -p 8020:8020  -p 88:88 -p 88:88/udp [IMAGE ID] /usr/bin/docker-quickstart
+	docker run --hostname=quickstart.cloudera --privileged=true -t -i -m 14G -p 80:80 -p 8888:8888 -p 50070:50070 -p 1004:1004 -p 1006:1006 -p 7180:7180 -p 8020:8020  -p 88:88 -p 88:88/udp [IMAGE ID] /usr/bin/docker-quickstart
 
 
 ---
